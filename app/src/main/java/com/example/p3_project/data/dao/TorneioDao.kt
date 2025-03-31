@@ -1,23 +1,30 @@
-import androidx.room.*
+package com.example.p3_project.data.dao
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Update
+import androidx.room.Delete
 import kotlinx.coroutines.flow.Flow
+import com.example.p3_project.data.entities.Torneio
 
 @Dao
-interface `TorneioDao` {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(torneio: `Torneio`): Long
+interface TorneioDao {
+    @Query("SELECT * FROM torneios")
+    fun getAllTorneios(): Flow<List<Torneio>>
+
+    @Insert
+    suspend fun insert(torneio: Torneio): Long
 
     @Update
-    suspend fun update(torneio: `Torneio`)
+    suspend fun update(torneio: Torneio)
 
     @Delete
-    suspend fun delete(torneio: `Torneio`)
-
-    @Query("SELECT * FROM torneios ORDER BY data_inicio DESC")
-    fun getAllTorneios(): Flow<List<`Torneio`>>
-
-    @Query("SELECT * FROM torneios WHERE id = :id")
-    suspend fun getTorneioById(id: Long): `Torneio`?
+    suspend fun delete(torneio: Torneio)
 
     @Query("SELECT * FROM torneios WHERE status = :status")
-    fun getTorneiosByStatus(status: String): Flow<List<`Torneio`>>
+    fun getTorneiosByStatus(status: String): Flow<List<Torneio>>
+
+    @Query("SELECT * FROM torneios WHERE id = :id LIMIT 1")
+    suspend fun getTorneioById(id: Long): Torneio?
 }

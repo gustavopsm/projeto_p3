@@ -1,9 +1,11 @@
+package com.example.p3_project.data.entities
+
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.ColumnInfo
 
 @Entity(tableName = "torneios")
-data class `Torneio`(
+data class Torneio(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
 

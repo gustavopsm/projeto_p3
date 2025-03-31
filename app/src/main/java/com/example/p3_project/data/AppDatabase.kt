@@ -1,10 +1,14 @@
+package com.example.p3_project.data
+
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.p3_project.data.dao.TorneioDao
+import com.example.p3_project.data.entities.Torneio
 
 @Database(
-    entities = [Torneio::class], // Adicione outras entidades depois
+    entities = [Torneio::class],
     version = 1,
     exportSchema = false
 )
@@ -20,7 +24,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "torneio_db" // Nome do banco
+                    "torneio_db"
                 ).build()
                 INSTANCE = instance
                 instance

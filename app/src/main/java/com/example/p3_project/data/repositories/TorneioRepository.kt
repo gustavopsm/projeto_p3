@@ -1,6 +1,11 @@
+package com.example.p3_project.data.repositories
+
+import com.example.p3_project.data.entities.Torneio
+import com.example.p3_project.data.dao.TorneioDao
 import kotlinx.coroutines.flow.Flow
 
 class TorneioRepository(private val torneioDao: TorneioDao) {
+
     fun getAllTorneios(): Flow<List<Torneio>> = torneioDao.getAllTorneios()
 
     suspend fun insert(torneio: Torneio): Long {
