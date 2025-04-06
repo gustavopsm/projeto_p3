@@ -9,10 +9,13 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.p3_project.databinding.ActivityMainBinding
-import com.example.p3_project.viewmodels.TorneioViewModel
-import com.example.p3_project.ui.viewmodel.TorneioViewModelFactory
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+
+import com.example.p3_project.viewmodels.TorneioViewModel
+import com.example.p3_project.ui.viewmodel.TorneioViewModelFactory
+import com.example.p3_project.viewmodels.TimeViewModel
+import com.example.p3_project.viewmodels.TimeViewModelFactory
 
 import com.example.p3_project.data.entities.Torneio
 
@@ -21,7 +24,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private val torneioViewModel: TorneioViewModel by viewModels {
-        TorneioViewModelFactory((application as MeuApp).repository)
+        TorneioViewModelFactory((application as MeuApp).torneioRepository)
+    }
+
+    private val timeViewModel: TimeViewModel by viewModels {
+        TimeViewModelFactory((application as MeuApp).timeRepository)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
