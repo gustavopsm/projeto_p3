@@ -25,10 +25,14 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "torneio_db"
-                ).build()
+                ).setQueryCallback({ sqlQuery, bindArgs ->
+                    android.util.Log.d("RoomDB", "Query: $sqlQuery SQL Args: $bindArgs")
+                }, java.util.concurrent.Executors.newSingleThreadExecutor())
+                    .build()
                 INSTANCE = instance
                 instance
             }
         }
+
     }
 }
