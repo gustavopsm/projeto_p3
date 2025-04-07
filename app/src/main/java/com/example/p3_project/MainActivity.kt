@@ -11,6 +11,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.p3_project.databinding.ActivityMainBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import android.util.Log
 
 import com.example.p3_project.viewmodels.TorneioViewModel
 import com.example.p3_project.ui.viewmodel.TorneioViewModelFactory
@@ -18,6 +19,8 @@ import com.example.p3_project.viewmodels.TimeViewModel
 import com.example.p3_project.viewmodels.TimeViewModelFactory
 
 import com.example.p3_project.data.entities.Torneio
+import com.example.p3_project.data.entities.Time
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -46,11 +49,13 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-        // Testando se os torneios estão sendo carregados
         lifecycleScope.launch {
             torneioViewModel.torneios.collectLatest { torneio ->
                 println("Lista de torneios carregada: $torneio")
             }
+            val novoTime = Time(id = 0, nome = "Time Teste", torneioId = 1)
+            timeViewModel.insertTime(novoTime)
+            Log.d("TESTE_BANCO", "Time inserido no banco: ${novoTime.nome}")
         }
     }
 }
