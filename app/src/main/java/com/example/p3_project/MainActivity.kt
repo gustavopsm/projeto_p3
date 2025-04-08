@@ -1,6 +1,7 @@
 package com.example.p3_project
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -11,16 +12,19 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.p3_project.databinding.ActivityMainBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import android.util.Log
 
 import com.example.p3_project.viewmodels.TorneioViewModel
 import com.example.p3_project.ui.viewmodel.TorneioViewModelFactory
 import com.example.p3_project.viewmodels.TimeViewModel
 import com.example.p3_project.viewmodels.TimeViewModelFactory
+import com.example.p3_project.viewmodels.PartidaViewModel
+import com.example.p3_project.viewmodels.PartidaViewModelFactory
 
 import com.example.p3_project.data.entities.Torneio
 import com.example.p3_project.data.entities.Time
-
+import com.example.p3_project.data.entities.Partida
+import com.example.p3_project.data.repository.PartidaRepository
+import com.example.p3_project.data.AppDatabase
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,6 +36,10 @@ class MainActivity : AppCompatActivity() {
 
     private val timeViewModel: TimeViewModel by viewModels {
         TimeViewModelFactory((application as MeuApp).timeRepository)
+    }
+
+    private val partidaViewModel: PartidaViewModel by viewModels {
+        PartidaViewModelFactory((application as MeuApp).partidaRepository)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,13 +57,25 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
+        val torneioId = 1
+
         lifecycleScope.launch {
-            torneioViewModel.torneios.collectLatest { torneio ->
-                println("Lista de torneios carregada: $torneio")
+            torneioViewModel.torneios.collectLatest { torneios ->
+                println("Lista de torneios carregada: $torneios")
             }
-            val novoTime = Time(id = 0, nome = "Time Teste", torneioId = 1)
+        }
+
+        lifecycleScope.launch {
+            val novoTime = Time(id = 0, nome = "Time Teste", torneioId = torneioId)
             timeViewModel.insertTime(novoTime)
             Log.d("TESTE_BANCO", "Time inserido no banco: ${novoTime.nome}")
+        }
+
+        lifecycleScope.launch {
+            val torneioId: Long = 1L
+            partidaViewModel.getPartidasPorTorneio(torneioId).collectLatest { partidas ->
+                Log.d("TESTE_BANCO", "Partidas do Torneio $torneioId: $partidas")
+            }
         }
     }
 }

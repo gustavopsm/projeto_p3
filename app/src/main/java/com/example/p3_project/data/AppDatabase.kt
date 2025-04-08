@@ -7,19 +7,22 @@ import androidx.room.RoomDatabase
 
 import com.example.p3_project.data.dao.TorneioDao
 import com.example.p3_project.data.dao.TimeDao
+import com.example.p3_project.data.dao.PartidaDao
 
 import com.example.p3_project.data.entities.Torneio
 import com.example.p3_project.data.entities.Time
+import com.example.p3_project.data.entities.Partida
 
 @Database(
-    entities = [Torneio::class, Time::class],
-    version = 2,
+    entities = [Torneio::class, Time::class, Partida::class],
+    version = 3,
     exportSchema = false
 )
 
 abstract class AppDatabase : RoomDatabase() {
     abstract fun torneioDao(): TorneioDao
     abstract fun timeDao(): TimeDao
+    abstract fun partidaDao(): PartidaDao
 
     companion object {
         @Volatile
