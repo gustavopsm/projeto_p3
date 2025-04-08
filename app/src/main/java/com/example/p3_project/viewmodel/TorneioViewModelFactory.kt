@@ -1,4 +1,4 @@
-package com.example.p3_project.ui.viewmodel
+package com.example.p3_project.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
