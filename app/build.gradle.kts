@@ -56,6 +56,9 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
 
     implementation("androidx.activity:activity-ktx:1.8.2")
+    implementation ("at.favre.lib:bcrypt:0.10.2")
+    implementation ("de.svenkubiak:jBCrypt:0.4")
+    implementation("com.auth0:java-jwt:4.2.1")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
