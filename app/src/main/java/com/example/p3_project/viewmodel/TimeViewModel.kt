@@ -4,11 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.p3_project.data.entities.Time
+import com.example.p3_project.data.entities.Torneio
 import com.example.p3_project.data.repository.TimeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 class TimeViewModel(private val repository: TimeRepository) : ViewModel() {
+    val times: Flow<List<Time>> = repository.getAllTimes()
 
     fun getTimesPorTorneio(torneioId: Int): Flow<List<Time>> {
         return repository.getTimesPorTorneio(torneioId)

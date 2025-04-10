@@ -9,10 +9,14 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.example.p3_project.databinding.ActivityMainBinding
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.*
 
+import com.example.p3_project.databinding.ActivityMainBinding
 import com.example.p3_project.viewmodel.AuthViewModel
 import com.example.p3_project.viewmodels.TorneioViewModel
 import com.example.p3_project.viewmodel.TorneioViewModelFactory
@@ -24,12 +28,14 @@ import com.example.p3_project.viewmodels.PartidaViewModelFactory
 import com.example.p3_project.data.entities.Torneio
 import com.example.p3_project.data.entities.Time
 import com.example.p3_project.data.entities.Partida
+import com.example.p3_project.data.entities.*
 import com.example.p3_project.data.repository.PartidaRepository
 import com.example.p3_project.data.repositories.UsuarioRepository
-import com.example.p3_project.data.AppDatabase
+
 
 import com.example.p3_project.security.CriptografiaUtil
 import com.example.p3_project.model.LoginRequest
+import kotlinx.coroutines.flow.firstOrNull
 
 class MainActivity : AppCompatActivity() {
 
@@ -62,27 +68,87 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-        val torneioId = 1
+        val torneioId = 1L
 
         lifecycleScope.launch {
-            torneioViewModel.torneios.collectLatest { torneios ->
-                println("Lista de torneios carregada: $torneios")
+            withContext(Dispatchers.IO) {
+                val torneiosList = torneioViewModel.torneios.firstOrNull() ?: emptyList()
+
+                if (torneiosList.isEmpty()) {
+                    val novoTorneio = Torneio(
+                        id = torneioId,
+                        nome = "Torneio Teste",
+                        descricao = "Descrição do torneio",
+                        tipo = TipoEsporte.FUTEBOL,
+                        dataInicio = "2025-04-05",
+                        tipoTorneio = TipoTorneio.MATA_MATA,
+                        status = StatusTorneio.PLANEJADO
+                    )
+                    torneioViewModel.insert(novoTorneio)
+                    Log.d("TESTE_BANCO", "Torneio inserido: ${novoTorneio.nome}")
+                }
+            }
+
+            val torneiosConfirmados = torneioViewModel.torneios.firstOrNull() ?: emptyList()
+            if (torneiosConfirmados.isEmpty()) {
+                Log.e("TESTE_BANCO", "Erro: Torneio não persistido no banco")
+                return@launch
+            }
+
+            // Criar times caso ainda não existam
+            withContext(Dispatchers.IO) {
+                val timesList = timeViewModel.times.firstOrNull() ?: emptyList()
+                if (timesList.isEmpty()) {
+                    val time1 = Time(id = 1L, nome = "Time 1", torneioId = torneioId)
+                    val time2 = Time(id = 2L, nome = "Time 2", torneioId = torneioId)
+                    timeViewModel.insertTime(time1)
+                    timeViewModel.insertTime(time2)
+                    Log.d("TESTE_BANCO", "Times inseridos: ${time1.nome} e ${time2.nome}")
+                }
+            }
+
+            // Espera os times serem persistidos
+            val timesConfirmados = timeViewModel.times.firstOrNull() ?: emptyList()
+            if (timesConfirmados.size < 2) {
+                Log.e("TESTE_BANCO", "Erro: Times não persistidos no banco")
+                return@launch
+            }
+
+            // Criar uma partida depois de garantir que torneio e times existem
+            withContext(Dispatchers.IO) {
+                val formatoData = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                val dataFormatada = formatoData.format(Date(System.currentTimeMillis()))
+
+                val novaPartida = Partida(
+                    id = 0,
+                    torneioId = torneioId,
+                    time1Id = 1L,
+                    time2Id = 2L,
+                    placarTime1 = 0,
+                    placarTime2 = 0,
+                    dataHora = dataFormatada,
+                    fase = "Grupo A",
+                    rodada = 1
+                )
+
+                partidaViewModel.insert(novaPartida)
+                Log.d("TESTE_BANCO", "Nova partida adicionada: $novaPartida")
             }
         }
 
         lifecycleScope.launch {
-            val novoTime = Time(id = 0, nome = "Time Teste", torneioId = torneioId)
-            timeViewModel.insertTime(novoTime)
-            Log.d("TESTE_BANCO", "Time inserido no banco: ${novoTime.nome}")
+            torneioViewModel.torneios.collectLatest { torneios ->
+                Log.d("TESTE_BANCO", "Lista de torneios carregada: $torneios")
+            }
         }
 
         lifecycleScope.launch {
-            val torneioId: Long = 1L
             partidaViewModel.getPartidasPorTorneio(torneioId).collectLatest { partidas ->
                 Log.d("TESTE_BANCO", "Partidas do Torneio $torneioId: $partidas")
             }
         }
 
+        // Teste de autenticação
         lifecycleScope.launch {
             try {
                 val authViewModel = AuthViewModel((application as MeuApp).usuarioRepository)
@@ -102,11 +168,9 @@ class MainActivity : AppCompatActivity() {
         val usuarioRepository = (application as MeuApp).usuarioRepository
         val authViewModel = AuthViewModel(usuarioRepository)
 
-        // Dados de teste para login
         val emailTeste = "teste@email.com"
         val senhaTeste = "123456"
 
-        // Executar login e exibir resultado no Logcat
         authViewModel.login(LoginRequest(emailTeste, senhaTeste)) { response ->
             if (response != null) {
                 Log.d("AuthTest", "Login realizado com sucesso! Token: ${response.token}")

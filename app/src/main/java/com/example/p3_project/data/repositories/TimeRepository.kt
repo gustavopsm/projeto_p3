@@ -6,8 +6,9 @@ import kotlinx.coroutines.flow.Flow
 
 class TimeRepository(private val timeDao: TimeDao) {
 
-    val todosTimes: Flow<List<Time>> = timeDao.getTimesPorTorneio(0)
-
+    fun getAllTimes(): Flow<List<Time>> {
+        return timeDao.getAllTimes()
+    }
 
     suspend fun insertTime(time: Time) {
         timeDao.insert(time)

@@ -5,10 +5,18 @@ import androidx.lifecycle.viewModelScope
 import com.example.p3_project.data.entities.Torneio
 import com.example.p3_project.data.repositories.TorneioRepository
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.withContext
 
 class TorneioViewModel(private val repository: TorneioRepository) : ViewModel() {
 
-    val torneios = repository.getAllTorneios()
+    val torneios: Flow<List<Torneio>> = repository.getAllTorneios()
+
+    suspend fun getTorneiosList(): List<Torneio> {
+        return torneios.firstOrNull() ?: emptyList()
+    }
 
     fun insert(torneio: Torneio) {
         viewModelScope.launch {

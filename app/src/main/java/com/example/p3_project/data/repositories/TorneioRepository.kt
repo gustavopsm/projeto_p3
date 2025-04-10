@@ -2,6 +2,7 @@ package com.example.p3_project.data.repositories
 
 import com.example.p3_project.data.entities.Torneio
 import com.example.p3_project.data.dao.TorneioDao
+import com.example.p3_project.data.entities.StatusTorneio
 import kotlinx.coroutines.flow.Flow
 
 class TorneioRepository(private val torneioDao: TorneioDao) {
@@ -20,7 +21,7 @@ class TorneioRepository(private val torneioDao: TorneioDao) {
         torneioDao.delete(torneio)
     }
 
-    fun getTorneiosByStatus(status: String): Flow<List<Torneio>> {
+    fun getTorneiosByStatus(status: StatusTorneio): Flow<List<Torneio>> {
         return torneioDao.getTorneiosByStatus(status)
     }
 

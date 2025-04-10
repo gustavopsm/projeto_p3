@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 
 import com.example.p3_project.data.dao.TorneioDao
 import com.example.p3_project.data.dao.TimeDao
@@ -17,10 +18,11 @@ import com.example.p3_project.data.entities.Usuario
 
 @Database(
     entities = [Torneio::class, Time::class, Partida::class, Usuario::class],
-    version = 4,
+    version = 7,
     exportSchema = false
 )
 
+@TypeConverters(Converters::class) // Registrando os Converters
 abstract class AppDatabase : RoomDatabase() {
     abstract fun torneioDao(): TorneioDao
     abstract fun timeDao(): TimeDao
@@ -50,3 +52,5 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 }
+
+

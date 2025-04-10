@@ -16,7 +16,13 @@ data class Torneio(
     val descricao: String? = null,
 
     @ColumnInfo(name = "tipo")
-    val tipo: String, // Ex: "Futebol", "eSports"
+    val tipo: TipoEsporte, // Ex: "Futebol", "eSports"
+
+    @ColumnInfo(name = "tipo_torneio")
+    val tipoTorneio: TipoTorneio,
+
+    @ColumnInfo(name = "num_times_por_grupo")
+    val numTimesPorGrupo: Int? = null, // Apenas para torneios mistos
 
     @ColumnInfo(name = "data_inicio")
     val dataInicio: String, // Formato: "yyyy-MM-dd"
@@ -25,5 +31,5 @@ data class Torneio(
     val dataFim: String? = null,
 
     @ColumnInfo(name = "status")
-    val status: String = "Planejado" // "Planejado", "Em Andamento", "Cancelado", "Concluído"
+    val status: StatusTorneio
 )

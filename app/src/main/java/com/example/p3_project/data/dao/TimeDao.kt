@@ -21,4 +21,7 @@ interface TimeDao {
 
     @Query("SELECT * FROM times WHERE id = :id")
     suspend fun getTimeById(id: Int): Time?
+
+    @Query("SELECT * FROM times")
+    fun getAllTimes(): Flow<List<Time>>
 }
