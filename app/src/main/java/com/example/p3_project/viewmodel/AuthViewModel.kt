@@ -1,6 +1,7 @@
 package com.example.p3_project.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.p3_project.data.repositories.UsuarioRepository
 import com.example.p3_project.security.CriptografiaUtil
@@ -14,12 +15,19 @@ class AuthViewModel(private val usuarioRepository: UsuarioRepository) : ViewMode
 
     fun registerUsuario(nome: String, email: String, senha: String, callback: (Boolean) -> Unit) {
         viewModelScope.launch {
-            val usuarioExistente = usuarioRepository.getUsuarioByEmail(email)
-            if (usuarioExistente == null) {
-                val usuario = Usuario(id = 0, nome = nome, email = email, senhaHash = CriptografiaUtil.hashSenha(senha))
-                usuarioRepository.registerUsuario(usuario)
-                callback(true)
-            } else {
+            try {
+                val usuarioExistente = usuarioRepository.getUsuarioByEmail(email)
+                if (usuarioExistente == null) {
+                    val senhaHash = CriptografiaUtil.hashSenha(senha)
+                    val usuario = Usuario(id = 0, nome = nome, email = email, senhaHash = senhaHash)
+
+                    usuarioRepository.registerUsuario(usuario)
+                    callback(true)
+                } else {
+                    callback(false) // Usuário já existe
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
                 callback(false)
             }
         }
@@ -27,13 +35,29 @@ class AuthViewModel(private val usuarioRepository: UsuarioRepository) : ViewMode
 
     fun login(loginRequest: LoginRequest, callback: (LoginResponse?) -> Unit) {
         viewModelScope.launch {
-            val usuario = usuarioRepository.getUsuarioByEmail(loginRequest.email)
-            if (usuario != null && CriptografiaUtil.verificarSenha(loginRequest.senha, usuario.senhaHash)) {
-                val token = JwtUtil.generateToken(usuario.email)
-                callback(LoginResponse(token))
-            } else {
+            try {
+                val usuario = usuarioRepository.getUsuarioByEmail(loginRequest.email)
+                if (usuario != null && CriptografiaUtil.verificarSenha(loginRequest.senha, usuario.senhaHash)) {
+                    val token = JwtUtil.generateToken(usuario.email)
+                    callback(LoginResponse(token))
+                } else {
+                    callback(null) // Credenciais inválidas
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
                 callback(null)
             }
+        }
+    }
+
+    // Adicionando a Factory para criação do ViewModel
+    class Factory(private val usuarioRepository: UsuarioRepository) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return AuthViewModel(usuarioRepository) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
 }

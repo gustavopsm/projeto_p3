@@ -27,6 +27,7 @@ import com.example.p3_project.viewmodels.PartidaViewModelFactory
 import com.example.p3_project.data.entities.*
 import com.example.p3_project.model.LoginRequest
 import com.example.p3_project.security.CriptografiaUtil
+import com.example.p3_project.security.JwtUtil
 
 class MainActivity : AppCompatActivity() {
 
@@ -42,6 +43,9 @@ class MainActivity : AppCompatActivity() {
     private val partidaViewModel: PartidaViewModel by viewModels {
         PartidaViewModelFactory((application as MeuApp).partidaRepository)
     }
+    private val authViewModel: AuthViewModel by viewModels {
+        AuthViewModel.Factory((application as MeuApp).usuarioRepository)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,23 +56,27 @@ class MainActivity : AppCompatActivity() {
         val navView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         val appBarConfiguration = AppBarConfiguration(
-            setOf(R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications)
+            setOf(R.id.navigation_home, R.id.navigation_dashboard)
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-        val torneioId = 1L
+        // Verifica se o usuário já está autenticado
+        if (JwtUtil.isTokenValid(this.toString())) {
+            navController.navigate(R.id.navigation_home)
+        }
 
+        // Carrega os dados do banco caso necessário
         lifecycleScope.launch(Dispatchers.IO) {
+            val torneioId = 1L
             criarTorneioSeNecessario(torneioId)
-            delay(500) // Aguarda persistência
+            delay(500)
             criarTimesSeNecessario(torneioId)
-            delay(500) // Aguarda persistência
+            delay(500)
             criarPartidaSeNecessario(torneioId)
         }
 
-        monitorarBancoDeDados(torneioId)
-
+        monitorarBancoDeDados()
         testarAutenticacao()
     }
 
@@ -92,8 +100,6 @@ class MainActivity : AppCompatActivity() {
     private suspend fun criarTimesSeNecessario(torneioId: Long) {
         val timesList = timeViewModel.times.firstOrNull() ?: emptyList()
         if (timesList.isEmpty()) {
-            Log.d("TESTE_BANCO", "Nenhum time encontrado, inserindo novos times.")
-
             val time1 = Time(id = 1L, nome = "Time 1", torneioId = torneioId)
             val time2 = Time(id = 2L, nome = "Time 2", torneioId = torneioId)
 
@@ -101,14 +107,6 @@ class MainActivity : AppCompatActivity() {
             timeViewModel.insertTime(time2)
 
             Log.d("TESTE_BANCO", "Times inseridos: ${time1.nome} e ${time2.nome}")
-        } else {
-            Log.d("TESTE_BANCO", "Times já existem no banco: $timesList")
-        }
-
-        val timesConfirmados = timeViewModel.times.firstOrNull() ?: emptyList()
-        if (timesConfirmados.size < 2) {
-            Log.e("TESTE_BANCO", "Erro: Times não persistidos corretamente.")
-            Log.e("TESTE_BANCO", "Lista atual: $timesConfirmados")
         }
     }
 
@@ -132,40 +130,15 @@ class MainActivity : AppCompatActivity() {
         Log.d("TESTE_BANCO", "Nova partida adicionada: $novaPartida")
     }
 
-    private fun monitorarBancoDeDados(torneioId: Long) {
+    private fun monitorarBancoDeDados() {
         lifecycleScope.launch {
             torneioViewModel.torneios.collectLatest { torneios ->
                 Log.d("TESTE_BANCO", "Lista de torneios carregada: $torneios")
             }
         }
-
-        lifecycleScope.launch {
-            partidaViewModel.getPartidasPorTorneio(torneioId).collectLatest { partidas ->
-                Log.d("TESTE_BANCO", "Partidas do Torneio $torneioId: $partidas")
-            }
-        }
     }
 
     private fun testarAutenticacao() {
-        lifecycleScope.launch {
-            try {
-                val authViewModel = AuthViewModel((application as MeuApp).usuarioRepository)
-
-                authViewModel.registerUsuario("Usuário Teste", "teste@email.com", "senha123") { sucesso ->
-                    if (sucesso) {
-                        Log.d("AuthTest", "Usuário cadastrado com sucesso!")
-                    } else {
-                        Log.e("AuthTest", "Erro: Usuário já existe no banco.")
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("AuthTest", "Erro ao cadastrar usuário", e)
-            }
-        }
-
-        val usuarioRepository = (application as MeuApp).usuarioRepository
-        val authViewModel = AuthViewModel(usuarioRepository)
-
         val emailTeste = "teste@email.com"
         val senhaTeste = "123456"
 

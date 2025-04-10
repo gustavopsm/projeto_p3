@@ -61,6 +61,8 @@ dependencies {
     implementation ("at.favre.lib:bcrypt:0.10.2")
     implementation ("de.svenkubiak:jBCrypt:0.4")
     implementation("com.auth0:java-jwt:4.2.1")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
+    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

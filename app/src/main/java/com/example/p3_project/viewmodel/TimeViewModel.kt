@@ -16,7 +16,7 @@ class TimeViewModel(private val repository: TimeRepository) : ViewModel() {
         return repository.getTimesPorTorneio(torneioId)
     }
 
-    fun insertTime(time: Time) {
+    suspend fun insertTime(time: Time) {
         viewModelScope.launch {
             repository.insertTime(time)
         }

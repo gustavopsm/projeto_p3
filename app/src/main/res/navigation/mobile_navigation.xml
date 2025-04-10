@@ -3,23 +3,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@id/login_fragment">
 
+    <!-- Tela de Login -->
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.example.p3_project.ui.home.HomeFragment"
-        android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        android:id="@+id/login_fragment"
+        android:name="com.example.p3_project.ui.auth.LoginFragment"
+        android:label="Login"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_login_to_navigation_home"
+            app:destination="@id/navigation_home" />
+    </fragment>
 
+    <!-- Dashboard -->
     <fragment
         android:id="@+id/navigation_dashboard"
         android:name="com.example.p3_project.ui.dashboard.DashboardFragment"
         android:label="@string/title_dashboard"
         tools:layout="@layout/fragment_dashboard" />
 
-    <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.example.p3_project.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+    <!-- Tela de Criação de Torneio -->
+
+
+    <!-- Tela de Partida -->
+
 </navigation>
