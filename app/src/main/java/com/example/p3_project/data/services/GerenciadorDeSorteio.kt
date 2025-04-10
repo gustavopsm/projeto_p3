@@ -1,5 +1,6 @@
 package com.example.p3_project.data.services
 
+import com.example.p3_project.data.entities.FaseTorneio
 import com.example.p3_project.data.entities.Partida
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -26,7 +27,7 @@ class GerenciadorDeSorteio {
                             placarTime1 = 0,
                             placarTime2 = 0,
                             dataHora = formatoData.format(Date()),
-                            fase = "Grupos",
+                            fase = FaseTorneio.GRUPOS,
                             rodada = partidas.size + 1
                         )
                     )
