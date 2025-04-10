@@ -7,3 +7,8 @@ enum class TipoEsporte {
 enum class StatusTorneio {
     PLANEJADO, EM_ANDAMENTO, CANCELADO, CONCLUIDO
 }
+
+enum class FaseTorneio {
+    GRUPOS,
+    MATA_MATA
+}

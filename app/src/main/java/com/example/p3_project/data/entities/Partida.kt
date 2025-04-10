@@ -38,7 +38,7 @@ data class Partida(
     val torneioId: Long,
 
     @ColumnInfo(name = "fase")
-    val fase: String, // "Grupos" ou "Mata-Mata"
+    val fase: FaseTorneio, // "Grupos" ou "Mata-Mata"
 
     @ColumnInfo(name = "rodada")
     val rodada: Int, // Ex: 1 = Oitavas, 2 = Quartas, etc.

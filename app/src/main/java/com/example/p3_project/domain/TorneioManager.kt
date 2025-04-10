@@ -1,8 +1,82 @@
 package com.example.p3_project.domain
 
+import com.example.p3_project.data.entities.FaseTorneio
 import com.example.p3_project.data.entities.Partida
+import com.example.p3_project.data.entities.Time
+import com.example.p3_project.data.repository.PartidaRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
-object TorneioManager {
+class TorneioManager(private val partidaRepository: PartidaRepository) {
+    private fun gerarDataHora(rodada: Int): String {
+        val diasDepois = rodada * 2 // Cada rodada ocorre a cada 2 dias
+        val formato = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+        val data = Calendar.getInstance().apply { add(Calendar.DAY_OF_MONTH, diasDepois) }.time
+        return formato.format(data)
+    }
+    /**
+     * Sorteia as partidas do torneio conforme o tipo de torneio.
+     */
+    suspend fun sortearPartidas(torneioId: Long, times: List<Time>, tipoTorneio: TipoTorneio) {
+        withContext(Dispatchers.IO) {
+            val partidas = mutableListOf<Partida>()
+
+            when (tipoTorneio) {
+                TipoTorneio.PONTOS_CORRIDOS -> {
+                    // Todos jogam contra todos
+                    var rodadaAtual = 1
+                    for (i in times.indices) {
+                        for (j in i + 1 until times.size) {
+                            partidas.add(
+                                Partida(
+                                    torneioId = torneioId,
+                                    fase = FaseTorneio.GRUPOS,
+                                    rodada = rodadaAtual++,
+                                    grupo = null,
+                                    time1Id = times[i].id,
+                                    time2Id = times[j].id,
+                                    placarTime1 = 0,
+                                    placarTime2 = 0,
+                                    dataHora = gerarDataHora(rodadaAtual)
+                                )
+                            )
+                        }
+                    }
+                }
+
+                TipoTorneio.MATA_MATA -> {
+                    // Sorteia confrontos aleatórios
+                    val shuffledTimes = times.shuffled()
+                    var rodadaAtual = 1
+
+                    for (i in shuffledTimes.indices step 2) {
+                        if (i + 1 < shuffledTimes.size) {
+                            partidas.add(
+                                Partida(
+                                    torneioId = torneioId,
+                                    fase = FaseTorneio.MATA_MATA,
+                                    rodada = rodadaAtual,
+                                    grupo = null,
+                                    time1Id = shuffledTimes[i].id,
+                                    time2Id = shuffledTimes[i + 1].id,
+                                    placarTime1 = 0,
+                                    placarTime2 = 0,
+                                    dataHora = gerarDataHora(rodadaAtual)
+                                )
+                            )
+                            rodadaAtual++
+                        }
+                    }
+                }
+            }
+
+            // Salvar as partidas no banco de dados
+            partidas.forEach { partidaRepository.insert(it) }
+        }
+    }
 
     /**
      * Determina os classificados da fase de grupos.
