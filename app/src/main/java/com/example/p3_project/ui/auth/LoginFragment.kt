@@ -27,9 +27,9 @@ class LoginFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         // Verifica se o usuário já está autenticado
-        val token = JwtUtil.loadToken(requireContext()) // Alterado de getToken() para loadToken()
+        val token = JwtUtil.loadToken(requireContext())
         if (token != null && JwtUtil.isTokenValid(token)) {
-            findNavController().navigate(R.id.navigation_home)
+            findNavController().navigate(R.id.action_login_to_navigation_dashboard)
         }
     }
 
@@ -43,6 +43,18 @@ class LoginFragment : Fragment() {
         val etSenha = view.findViewById<EditText>(R.id.etSenha)
         val btnLogin = view.findViewById<Button>(R.id.btnLogin)
 
+        authViewModel.registerUsuario(
+            nome = "Usuário Teste",
+            email = "teste@teste.com",
+            senha = "123456"
+        ) { sucesso ->
+            if (sucesso) {
+                android.util.Log.d("SEED", "Usuário de teste criado com sucesso!")
+            } else {
+                android.util.Log.d("SEED", "Usuário de teste já existe ou erro na criação.")
+            }
+        }
+
         btnLogin.setOnClickListener {
             val email = etEmail.text.toString().trim()
             val senha = etSenha.text.toString().trim()
@@ -50,9 +62,9 @@ class LoginFragment : Fragment() {
             if (email.isNotEmpty() && senha.isNotEmpty()) {
                 authViewModel.login(LoginRequest(email, senha)) { response ->
                     if (response != null) {
-                        JwtUtil.saveToken(requireContext(), response.token) // Salva o token corretamente
+                        JwtUtil.saveToken(requireContext(), response.token)
                         Toast.makeText(requireContext(), "Login bem-sucedido!", Toast.LENGTH_SHORT).show()
-                        findNavController().navigate(R.id.navigation_home)
+                        findNavController().navigate(R.id.navigation_dashboard)
                     } else {
                         Toast.makeText(requireContext(), "Erro no login. Verifique suas credenciais!", Toast.LENGTH_SHORT).show()
                     }

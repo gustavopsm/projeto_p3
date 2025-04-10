@@ -5,30 +5,33 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.p3_project.data.dao.TorneioDao
 import com.example.p3_project.data.dao.TimeDao
 import com.example.p3_project.data.dao.PartidaDao
 import com.example.p3_project.data.dao.UsuarioDao
-
 import com.example.p3_project.data.entities.Torneio
 import com.example.p3_project.data.entities.Time
 import com.example.p3_project.data.entities.Partida
 import com.example.p3_project.data.entities.Usuario
+import com.example.p3_project.security.CriptografiaUtil
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.util.concurrent.Executors
 
 @Database(
     entities = [Torneio::class, Time::class, Partida::class, Usuario::class],
-    version = 8,
+    version = 10,
     exportSchema = false
 )
 
-@TypeConverters(Converters::class) // Registrando os Converters
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun torneioDao(): TorneioDao
     abstract fun timeDao(): TimeDao
     abstract fun partidaDao(): PartidaDao
     abstract fun usuarioDao(): UsuarioDao
-
 
     companion object {
         @Volatile
@@ -41,10 +44,15 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "torneio_db"
                 )
-                    .fallbackToDestructiveMigration() // ⬅️ Para recriar o banco ao mudar a versão
+                    .fallbackToDestructiveMigration()
                     .setQueryCallback({ sqlQuery, bindArgs ->
                         android.util.Log.d("RoomDB", "Query: $sqlQuery SQL Args: $bindArgs")
-                    }, java.util.concurrent.Executors.newSingleThreadExecutor())
+                    }, Executors.newSingleThreadExecutor())
+                    .addCallback(object : RoomDatabase.Callback() {
+                        override fun onCreate(db: SupportSQLiteDatabase) {
+                            super.onCreate(db)
+                        }
+                    })
                     .build()
                 INSTANCE = instance
                 instance
@@ -52,5 +60,3 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 }
-
-
