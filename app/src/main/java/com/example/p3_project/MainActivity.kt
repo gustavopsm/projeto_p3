@@ -42,9 +42,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private val torneioViewModel: TorneioViewModel by viewModels {
-        TorneioViewModelFactory((application as MeuApp).torneioRepository)
+        val app = application as MeuApp
+        TorneioViewModelFactory(app.torneioRepository, app.torneioManager, app.partidaRepository)
     }
-
     private val timeViewModel: TimeViewModel by viewModels {
         TimeViewModelFactory((application as MeuApp).timeRepository)
     }
@@ -127,7 +127,7 @@ class MainActivity : AppCompatActivity() {
                     placarTime1 = 0,
                     placarTime2 = 0,
                     dataHora = dataFormatada,
-                    fase = "Grupo A",
+                    fase = FaseTorneio.GRUPOS,
                     rodada = 1
                 )
 
@@ -147,6 +147,14 @@ class MainActivity : AppCompatActivity() {
                 Log.d("TESTE_BANCO", "Partidas do Torneio $torneioId: $partidas")
             }
         }
+
+        lifecycleScope.launch {
+            val torneioId = 1L
+            partidaViewModel.getPartidasPorTorneio(torneioId).collectLatest { partidas ->
+                Log.d("TESTE_PARTIDAS", "Partidas do Torneio $torneioId: $partidas")
+            }
+        }
+
 
         // Teste de autenticação
         lifecycleScope.launch {

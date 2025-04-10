@@ -7,7 +7,7 @@ import com.example.p3_project.data.repositories.TorneioRepository
 import com.example.p3_project.data.repository.TimeRepository
 import com.example.p3_project.data.repository.PartidaRepository
 import com.example.p3_project.data.repositories.UsuarioRepository
-
+import com.example.p3_project.domain.TorneioManager
 
 class MeuApp : Application() {
 
@@ -17,5 +17,6 @@ class MeuApp : Application() {
     val timeRepository by lazy { TimeRepository(database.timeDao()) }
     val partidaRepository by lazy { PartidaRepository(database.partidaDao()) }
     val usuarioRepository by lazy { UsuarioRepository(database.usuarioDao()) }
+    val torneioManager by lazy { TorneioManager(partidaRepository) }
 
 }

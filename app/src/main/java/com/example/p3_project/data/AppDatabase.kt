@@ -18,7 +18,7 @@ import com.example.p3_project.data.entities.Usuario
 
 @Database(
     entities = [Torneio::class, Time::class, Partida::class, Usuario::class],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 

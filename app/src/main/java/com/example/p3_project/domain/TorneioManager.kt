@@ -158,4 +158,19 @@ class TorneioManager(private val partidaRepository: PartidaRepository) {
             else -> Pair(0, golsFeitos - golsSofridos)
         }
     }
+
+    suspend fun iniciarTorneio(torneioId: Long, times: List<Time>, tipoTorneio: TipoTorneio) {
+        withContext(Dispatchers.IO) {
+            val partidas = mutableListOf<Partida>()
+
+            // Gera as partidas conforme o tipo do torneio
+            sortearPartidas(torneioId, times, tipoTorneio)
+
+            // Salva as partidas no banco de dados
+            partidas.forEach { partidaRepository.insert(it) }
+
+            // Log para depuração
+            println("Torneio iniciado com ${partidas.size} partidas")
+        }
+    }
 }
