@@ -9,25 +9,24 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.collectLatest
-import java.text.SimpleDateFormat
-import java.util.*
-
-import com.example.p3_project.databinding.ActivityMainBinding
-import com.example.p3_project.viewmodel.AuthViewModel
-import com.example.p3_project.viewmodels.TorneioViewModel
-import com.example.p3_project.viewmodel.TorneioViewModelFactory
-import com.example.p3_project.viewmodels.TimeViewModel
-import com.example.p3_project.viewmodels.TimeViewModelFactory
-import com.example.p3_project.viewmodels.PartidaViewModel
-import com.example.p3_project.viewmodels.PartidaViewModelFactory
-
 import com.example.p3_project.data.entities.*
+import com.example.p3_project.databinding.ActivityMainBinding
 import com.example.p3_project.model.LoginRequest
 import com.example.p3_project.security.CriptografiaUtil
 import com.example.p3_project.security.JwtUtil
+import com.example.p3_project.viewmodel.AuthViewModel
+import com.example.p3_project.viewmodel.TorneioViewModelFactory
+import com.example.p3_project.viewmodels.PartidaViewModel
+import com.example.p3_project.viewmodels.PartidaViewModelFactory
+import com.example.p3_project.viewmodels.TimeViewModel
+import com.example.p3_project.viewmodels.TimeViewModelFactory
+import com.example.p3_project.viewmodels.TorneioViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -37,12 +36,15 @@ class MainActivity : AppCompatActivity() {
         val app = application as MeuApp
         TorneioViewModelFactory(app.torneioRepository, app.torneioManager, app.partidaRepository)
     }
+
     private val timeViewModel: TimeViewModel by viewModels {
         TimeViewModelFactory((application as MeuApp).timeRepository)
     }
+
     private val partidaViewModel: PartidaViewModel by viewModels {
         PartidaViewModelFactory((application as MeuApp).partidaRepository)
     }
+
     private val authViewModel: AuthViewModel by viewModels {
         AuthViewModel.Factory((application as MeuApp).usuarioRepository)
     }
@@ -61,19 +63,15 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-        // Verifica se o usuário já está autenticado
         if (JwtUtil.isTokenValid(this.toString())) {
             navController.navigate(R.id.navigation_dashboard)
         }
 
-        // Carrega os dados do banco caso necessário
         lifecycleScope.launch(Dispatchers.IO) {
-            val torneioId = 1L
-            criarTorneioSeNecessario(torneioId)
-            delay(500)
-            criarTimesSeNecessario(torneioId)
-            delay(500)
-            criarPartidaSeNecessario(torneioId)
+            delay(500) // Pequeno delay para garantir inicialização
+            criarTorneioSeNecessario(1L)
+            criarTimesSeNecessario(1L)
+            criarPartidaSeNecessario(1L)
         }
 
         monitorarBancoDeDados()
@@ -81,7 +79,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private suspend fun criarTorneioSeNecessario(torneioId: Long) {
-        val torneiosList = torneioViewModel.torneios.firstOrNull() ?: emptyList()
+        val torneiosList = torneioViewModel.torneios.value ?: emptyList()
         if (torneiosList.isEmpty()) {
             val novoTorneio = Torneio(
                 id = torneioId,
@@ -110,6 +108,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
     private suspend fun criarPartidaSeNecessario(torneioId: Long) {
         val formatoData = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         val dataFormatada = formatoData.format(Date(System.currentTimeMillis()))
@@ -131,10 +130,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun monitorarBancoDeDados() {
-        lifecycleScope.launch {
-            torneioViewModel.torneios.collectLatest { torneios ->
-                Log.d("TESTE_BANCO", "Lista de torneios carregada: $torneios")
-            }
+        torneioViewModel.torneios.observe(this) { torneios ->
+            Log.d("TESTE_BANCO", "Lista de torneios carregada: $torneios")
         }
     }
 

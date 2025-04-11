@@ -7,7 +7,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.p3_project.R
 import com.example.p3_project.data.AppDatabase
 import com.example.p3_project.data.dao.TorneioDao
 import com.example.p3_project.data.repositories.TorneioRepository
@@ -53,10 +55,17 @@ class DashboardFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        torneioViewModel.carregarTorneios()
+
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
         observeTorneios()
+
+        binding.btnCriarTorneio.setOnClickListener {
+            findNavController().navigate(R.id.action_navigation_dashboard_to_createTorneioFragment
+            )
+        }
     }
 
     private fun setupRecyclerView() {
@@ -69,10 +78,8 @@ class DashboardFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             binding.progressBar.visibility = View.VISIBLE
 
-            torneioViewModel.torneios.collect { torneiosList ->
-                binding.progressBar.visibility = View.GONE
-
-                if (torneiosList.isEmpty()) {
+            torneioViewModel.torneios.observe(viewLifecycleOwner) { torneiosList ->
+                if (torneiosList.isNullOrEmpty()) {
                     binding.recyclerViewTorneios.visibility = View.GONE
                     binding.textViewEmpty.visibility = View.VISIBLE
                 } else {
@@ -81,9 +88,9 @@ class DashboardFragment : Fragment() {
                     adapter.updateList(torneiosList)
                 }
             }
+
         }
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()

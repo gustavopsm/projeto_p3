@@ -1,6 +1,8 @@
 package com.example.p3_project.viewmodels
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.p3_project.data.entities.Partida
@@ -21,11 +23,22 @@ class TorneioViewModel(
     private val partidaRepository: PartidaRepository
     ) : ViewModel() {
 
-    val torneios: Flow<List<Torneio>> = repository.getAllTorneios()
+    private val _torneios = MutableLiveData<List<Torneio>>()
+    val torneios: LiveData<List<Torneio>> = _torneios
 
-    suspend fun getTorneiosList(): List<Torneio> {
-        return torneios.firstOrNull() ?: emptyList()
+
+    fun carregarTorneios() {
+        viewModelScope.launch {
+            val torneiosRemotos = repository.listarTorneiosRemotos()
+            torneiosRemotos?.let {
+                _torneios.postValue(it)
+            }
+        }
     }
+
+//    suspend fun getTorneiosList(): List<Torneio> {
+//        return torneios.firstOrNull() ?: emptyList()
+//    }
 
     fun insert(torneio: Torneio) {
         viewModelScope.launch {

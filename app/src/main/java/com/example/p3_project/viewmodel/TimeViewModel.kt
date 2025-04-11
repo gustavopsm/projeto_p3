@@ -1,36 +1,45 @@
 package com.example.p3_project.viewmodels
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.p3_project.data.entities.Time
-import com.example.p3_project.data.entities.Torneio
 import com.example.p3_project.data.repository.TimeRepository
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class TimeViewModel(private val repository: TimeRepository) : ViewModel() {
-    val times: Flow<List<Time>> = repository.getAllTimes()
+class TimeViewModel(
+    private val repository: TimeRepository
+) : ViewModel() {
 
-    fun getTimesPorTorneio(torneioId: Int): Flow<List<Time>> {
-        return repository.getTimesPorTorneio(torneioId)
+    // ✅ Aqui já criamos o StateFlow corretamente
+    private val _times = MutableStateFlow<List<Time>>(emptyList())
+    val times: StateFlow<List<Time>> = _times.asStateFlow()
+
+    init {
+        carregarTimes()
     }
 
-    suspend fun insertTime(time: Time) {
+    private fun carregarTimes() {
         viewModelScope.launch {
-            repository.insertTime(time)
+            repository.getAllTimes().collect { timesList ->
+                _times.value = timesList
+            }
         }
     }
 
-    fun updateTime(time: Time) {
+    fun insertTime(time: Time) {
         viewModelScope.launch {
-            repository.updateTime(time)
+            repository.insertTime(time)
+            carregarTimes() // Opcional: garante atualização após inserção
         }
     }
 
     fun deleteTime(time: Time) {
         viewModelScope.launch {
             repository.deleteTime(time)
+            carregarTimes() // Opcional
         }
     }
 }

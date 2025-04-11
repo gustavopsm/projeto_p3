@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import androidx.room.Delete
+import androidx.room.OnConflictStrategy
 import kotlinx.coroutines.flow.Flow
 import com.example.p3_project.data.entities.Torneio
 import com.example.p3_project.data.entities.Partida
@@ -39,4 +40,11 @@ interface TorneioDao {
 
     @Query("SELECT * FROM partidas WHERE torneioId = :torneioId ORDER BY rodada DESC LIMIT :quantidade")
     suspend fun getTimesQueAvancam(torneioId: Long, quantidade: Int): List<Partida>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(torneios: List<Torneio>)
+
+    @Query("DELETE FROM torneios")
+    suspend fun deleteAll()
+
 }
